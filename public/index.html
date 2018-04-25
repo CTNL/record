@@ -1,0 +1,247 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Record '18 | Boğaziçi University</title>
+  <meta name="text" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+  <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap-theme.min.css'>
+  <link rel="stylesheet" type="text/css" href="/assets/spinner.css">
+  <link rel="stylesheet" type="text/css" href="/assets/app.css">
+</head>
+<body>
+
+<div id="app" class="container">
+  <header>
+    <div class="pull-right alert" v-if="login">
+      You are logged in as: {{ login }} <button class="btn btn-xs" @click="logout">Logout</button>
+    </div>
+    <div class="branding">
+      <router-link v-bind:to="{path: '/'}"><img src="/assets/logo.png" alt="Logo" title="Home page" class="logo"/></router-link>
+      <h1>Record '18</h1>
+      <p>Boğaziçi University</p>
+    </div>
+  </header>
+  <main>
+    <router-view></router-view>
+  </main>
+  <footer class="footer" style="clear:both">
+    <nav class="pull-left">
+        <ul class="nav nav-pills">
+        	<li><router-link v-bind:to="{path: '/list'}">Records</router-link></li>
+          <li><router-link v-bind:to="{path: '/'}">About Us  </router-link></li>
+          <li><router-link v-bind:to="{path: '/'}">Statistics</router-link></li>
+          <li><router-link v-bind:to="{path: '/'}">Contact Us</router-link></li>
+
+        </ul>
+    </nav>
+    <div class="copyright pull-right">
+        © 2018, 
+        made with <i class="glyphicon glyphicon-heart"></i> by
+        <a href="#">Yigit Cetinel</a>.
+    </div>
+  </footer>
+</div>
+
+<template id='spinner-template'>
+<div class="spinner-container">
+  <div class="spinner-content">
+    <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+      <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+    </svg>
+    <br>
+    <div class="spinner-message">{{ message }}</div>
+  </div>
+</div>
+</template>
+
+<template id="record-login">
+  <div class="ev-login col-sm-4 col-sm-offset-4">
+    <spinner v-show="loggingIn" message="Logging in..."></spinner>
+    <div class="alert alert-danger" v-if="error">
+      <p>{{ error }}</p>
+    </div>
+    <div class="form-group">
+      <input 
+        type="text"
+        data-id="login.username" 
+        class="form-control js-login__username"
+        placeholder="Enter your Student ID"
+        v-model="credentials.username"
+      >
+    </div>
+    <div class="form-group">
+      <input
+        type="password"
+        class="form-control js-login__password "
+        placeholder="Enter your password"
+        v-model="credentials.password"
+      >
+    </div>
+    <button 
+      data-id="login.submit"
+      class="btn btn-primary solid blank js-login__submit" 
+      @click="submit()"
+    >
+      Login &nbsp; <i class="glyphicon glyphicon-log-in"></i>
+    </button>
+    <br><br><br>
+    <a href="#">Forgot your password?</a><br>
+    Don’t have an account? &nbsp;<a href="#">Sign up here.</a>
+  </div>
+</template>
+
+<template id="record-list">
+  <div>
+    <div class="actions">
+      <router-link class="btn btn-default" v-bind:to="{path: '/add-record'}">
+        <span class="glyphicon glyphicon-plus"></span>
+        Add record
+      </router-link>
+      <router-link class="btn btn-default" v-bind:to="{path: '/preview'}">
+        <span class="glyphicon glyphicon-film"></span>
+        Preview
+      </router-link>
+    </div>
+    <div class="alert pull-right" v-bind:class="{ 'alert-danger': totalLength > charLimit }">
+    	Total length of your active records is {{ totalLength }} / {{ charLimit }}.
+    </div>
+    <div class="filters row">
+      <div class="form-group col-sm-3">
+        <label for="search-element">Search records by name</label>
+        <input v-model="searchKey" class="form-control" id="search-element" required />
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Writer</th>
+        <th>Record text</th>
+        <th>Length</th>
+        <th class="col-sm-2">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="record in filteredRecords">
+        <td>
+          <router-link v-bind:to="{name: 'record', params: {record_id: record.id}}">{{ record.name }}</router-link>
+        </td>
+        <td>{{ record.text | truncate(70) }}</td>
+        <td>
+          {{ record.text.length }}
+        </td>
+        <td>
+          <button class="btn btn-xs" 
+          		v-bind:class="[ record.active ? 'btn-success' : 'btn-danger' ]" 
+          		v-on:click="record.active = record.active ? false : true">{{ record.active ? "On" : "Off" }}</button>
+          <router-link class="btn btn-warning btn-xs" v-bind:to="{name: 'record-edit', params: {record_id: record.id}}">Edit</router-link>
+          <router-link class="btn btn-danger btn-xs" v-bind:to="{name: 'record-delete', params: {record_id: record.id}}">Delete</router-link>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<template id="record-preview">
+  <div>
+  	<div class="alert pull-right" v-bind:class="{ 'alert-danger': totalLength > charLimit }">
+    	Total length of your active records is {{ totalLength }} / {{ charLimit }}.
+    </div>
+    <h2>Preview</h2>
+    <div class="row" style="padding: 16px">
+	    <div class="pull-left">
+	    	<img width="300" height="500">
+	    </div>
+	    <div class="col-sm-8">
+		    <h1>YOUR NAME</h1>
+		    <h3>YOUR DEPARTMENT</h3>
+		    
+		    <span v-for="record in activeRecords">
+		    	 {{ record.text }} <b>{{ record.name }}</b>
+		    </span>
+		</div>
+	</div>
+    <br/>
+    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+    <router-link v-bind:to="'/'">Back to record list</router-link>
+  </div>
+</template>
+
+<template id="add-record">
+  <div>
+    <h2>Add new record</h2>
+    <form v-on:submit="createRecord">
+      <div class="form-group">
+        <label for="add-name">Name</label>
+        <input class="form-control" id="add-name" v-model="record.name" required/>
+      </div>
+      <div class="form-group">
+        <label for="add-text">Text</label>
+        <textarea class="form-control" id="add-text" rows="10" v-model="record.text"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Create</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+
+<template id="record">
+  <div>
+    <h2>{{ record.name }}</h2>
+    <b>Text: </b>
+    <div>{{ record.text }}</div>
+    <b>Length:</b>
+    <div>{{ record.text.length }}</div>
+    <br/>
+    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+    <router-link v-bind:to="'/'">Back to record list</router-link>
+  </div>
+</template>
+
+<template id="record-edit">
+  <div>
+    <h2>Edit record</h2>
+    <form v-on:submit="updateRecord">
+      <div class="form-group">
+        <label for="edit-name">Name</label>
+        <input class="form-control" id="edit-name" v-model="record.name" required/>
+      </div>
+      <div class="form-group">
+        <label for="edit-text">Text</label>
+        <textarea class="form-control" id="edit-text" rows="3" v-model="record.text"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+
+<template id="record-delete">
+  <div>
+    <h2>Delete record {{ record.name }}</h2>
+    <form v-on:submit="deleteRecord">
+      <p>The action cannot be undone.</p>
+      <button type="submit" class="btn btn-danger">Delete</button>
+      <router-link class="btn btn-default" v-bind:to="'/'">Cancel</router-link>
+    </form>
+  </div>
+</template>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.10/vue.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.0"></script>
+<script src="https://unpkg.com/vuex@3.0.1/dist/vuex.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/vue-router/2.2.1/vue-router.js'></script>
+<script src='/assets/app.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Lato:300']
+    }
+  });
+</script>
+</body>
+</html>
