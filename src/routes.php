@@ -50,16 +50,7 @@ $app->post('/write', function (Request $request, Response $response, array $args
 	return $response->withJson($result);
 });
 
-/*
-$app->get('/sifreler', function (Request $request, Response $response, array $args) {
 
-	$table = $this->db->table('ogrenci');
-
-    $posts = $table->get();
-
-    return $response->withJson($posts);
-});
-*/
 $app->get('/token', function (Request $request, Response $response, array $args) {
 
 	$login = new App\Login();
@@ -89,12 +80,6 @@ $app->group('/record', function () use ($app){
         return $this->response->withJson($result, 200);
     });
 
-    /*
-    $app->get('/[{id}]', function($request, $response, $args){
-        $data = Record::find($args['id']);
-        return $this->response->withJson($data, 200);
-    });
-    */
 
 	// ADD a new record
     $app->post('/', function ($request, $response) {
@@ -175,28 +160,6 @@ $app->group('/record', function () use ($app){
 
         return $this->response->withJson($result, 200);
     });
-
-	/*    
-	$app->post('/activate/[{id}]', function ($request, $response, $args) {
-        // ACTIVATE of a record
-        $record = $request->getParsedBody();
-
-        $token = $request->getAttribute('token');
-		$sid = $token['id']; // Studentid
-
-		$old_record = Record::find($args['id']);
-
-		if(!$old_record) return $response->withJson(['result'=>'error'], 404);
-
-		if($old_record['sid'] !== $sid ) return $response->withJson(['result'=>'error'],401);
-
-        $data = $old_record->update([
-	        'active' => $record['active'] ? 1 : 0,
-	    ]);
-
-        return $this->response->withJson($data, 200);
-    });
-    */
 
 })->add(function ($request, $response, $next) {
 	$token = Login::getToken();
