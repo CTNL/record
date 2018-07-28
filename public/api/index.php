@@ -14,6 +14,7 @@ define('__ROOT__', __DIR__ . '/../../');
 require __ROOT__ . 'vendor/autoload.php';
 
 session_start();
+
 date_default_timezone_set("Europe/Istanbul");
 
 // Instantiate the app

@@ -1,14 +1,14 @@
 {
-    "name": "slim/slim-skeleton",
-    "description": "A Slim Framework skeleton application for rapid development",
-    "keywords": ["microframework", "rest", "router", "psr7"],
-    "homepage": "http://github.com/slimphp/Slim-Skeleton",
+    "name": "ctnl/record",
+    "description": "Record 2018",
+    "keywords": [],
+    "homepage": "http://github.com/ctnl/record",
     "license": "MIT",
     "authors": [
         {
-            "name": "Josh Lockhart",
-            "email": "info@joshlockhart.com",
-            "homepage": "http://www.joshlockhart.com/"
+            "name": "Yigit Cetinel",
+            "email": "mail@yigitcetinel.com",
+            "homepage": "http://www.yigitcetinel.com/"
         }
     ],
     "require": {
@@ -33,7 +33,7 @@
     },
     "scripts": {
         "start": "php -S localhost:8080 -t public",
-        "db": "mysql -uroot < db.sql",
+        "db": "mysql -uroot < db/db.sql",
         "test": "phpunit"
     }
 
