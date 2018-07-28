@@ -58,43 +58,107 @@
 </template>
 
 <template id="record-login">
-  <div class="ev-login col-sm-4 col-sm-offset-4">
-    <spinner v-show="loggingIn" message="Logging in..."></spinner>
-    <div class="alert alert-danger" v-if="error">
-      <p>{{ error }}</p>
+  <div>
+    <div class="ev-write col-sm-6">
+      <div class="col-md-12 ev-col">
+        <spinner v-show="writing" message="Recording..."></spinner>
+        <h3>Write a record</h3>
+        <div class="alert alert-danger" v-if="errorWrite">
+          <p>{{ errorWrite }}</p>
+        </div>
+        <div class="alert alert-success" v-if="successWrite">
+          <p>{{ successWrite }}</p>
+        </div>
+        <div class="form-group">
+          <input 
+            type="email"
+            data-id="write.username" 
+            class="form-control js-write__username"
+            placeholder="Enter his/her email address"
+            v-model="writer.username"
+          >
+        </div>
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-control js-write__password "
+            placeholder="Enter his/her password"
+            v-model="writer.password"
+          >
+        </div>
+        <div class="form-group">
+          <input 
+            type="text"
+            data-id="write.name" 
+            class="form-control js-write__name"
+            placeholder="Enter your name"
+            v-model="writer.name"
+          >
+        </div>
+        <div class="form-group">
+          <textarea 
+            data-id="write.text" 
+            class="form-control js-write__text"
+            placeholder="Enter your record"
+            rows="4" 
+            v-model="writer.text"
+          ></textarea>
+        </div>
+        <button 
+          data-id="write.submit"
+          class="btn btn-primary solid blank js-write__submit" 
+          @click="write()"
+        >
+          Write &nbsp; <i class="glyphicon glyphicon-pencil"></i>
+        </button>
+      </div>
+      <div class="col-md-12 ev-col" v-if="writer.name">
+        <h3>Preview</h3>
+        <div><span>{{ writer.text }}</span> <b>{{ writer.name }}</b></div>
+      </div>
     </div>
-    <div class="form-group">
-      <input 
-        type="text"
-        data-id="login.username" 
-        class="form-control js-login__username"
-        placeholder="Enter your Student ID"
-        v-model="credentials.username"
-      >
+
+    <div class="ev-login col-sm-6">
+      <div class="col-md-12 ev-col">
+        <spinner v-show="loggingIn" message="Logging in..."></spinner>
+        <h3>Check your records</h3>
+        <div class="alert alert-danger" v-if="errorLogin">
+          <p>{{ errorLogin }}</p>
+        </div>
+        <div class="form-group">
+          <input 
+            type="email"
+            data-id="login.username" 
+            class="form-control js-login__username"
+            placeholder="Enter your email address"
+            v-model="credentials.username"
+          >
+        </div>
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-control js-login__password "
+            placeholder="Enter your password"
+            v-model="credentials.password"
+          >
+        </div>
+        <button 
+          data-id="login.submit"
+          class="btn btn-primary solid blank js-login__submit" 
+          @click="submit()"
+        >
+          Login &nbsp; <i class="glyphicon glyphicon-log-in"></i>
+        </button>
+        <!--<br><br><br>
+        <a href="#">Forgot your password?</a><br>
+        Don’t have an account? &nbsp;<a href="#">Sign up here.</a>-->
+      </div>
     </div>
-    <div class="form-group">
-      <input
-        type="password"
-        class="form-control js-login__password "
-        placeholder="Enter your password"
-        v-model="credentials.password"
-      >
-    </div>
-    <button 
-      data-id="login.submit"
-      class="btn btn-primary solid blank js-login__submit" 
-      @click="submit()"
-    >
-      Login &nbsp; <i class="glyphicon glyphicon-log-in"></i>
-    </button>
-    <br><br><br>
-    <a href="#">Forgot your password?</a><br>
-    Don’t have an account? &nbsp;<a href="#">Sign up here.</a>
   </div>
 </template>
 
 <template id="record-list">
-  <div>
+  <div class="ev-col">
     <div class="actions">
       <router-link class="btn btn-default" v-bind:to="{path: '/add-record'}">
         <span class="glyphicon glyphicon-plus"></span>
@@ -135,7 +199,7 @@
         <td>
           <button class="btn btn-xs" 
           		v-bind:class="[ record.active ? 'btn-success' : 'btn-danger' ]" 
-          		v-on:click="record.active = record.active ? false : true">{{ record.active ? "On" : "Off" }}</button>
+          		v-on:click="toggleRecord(record.id)">{{ record.active ? "On" : "Off" }}</button>
           <router-link class="btn btn-warning btn-xs" v-bind:to="{name: 'record-edit', params: {record_id: record.id}}">Edit</router-link>
           <router-link class="btn btn-danger btn-xs" v-bind:to="{name: 'record-delete', params: {record_id: record.id}}">Delete</router-link>
         </td>
@@ -146,7 +210,7 @@
 </template>
 
 <template id="record-preview">
-  <div>
+  <div class="ev-col">
   	<div class="alert pull-right" v-bind:class="{ 'alert-danger': totalLength > charLimit }">
     	Total length of your active records is {{ totalLength }} / {{ charLimit }}.
     </div>
@@ -189,7 +253,7 @@
 </template>
 
 <template id="record">
-  <div>
+  <div class="ev-col">
     <h2>{{ record.name }}</h2>
     <b>Text: </b>
     <div>{{ record.text }}</div>
@@ -202,7 +266,7 @@
 </template>
 
 <template id="record-edit">
-  <div>
+  <div class="ev-col">
     <h2>Edit record</h2>
     <form v-on:submit="updateRecord">
       <div class="form-group">
@@ -220,7 +284,7 @@
 </template>
 
 <template id="record-delete">
-  <div>
+  <div class="ev-col">
     <h2>Delete record {{ record.name }}</h2>
     <form v-on:submit="deleteRecord">
       <p>The action cannot be undone.</p>

@@ -7,17 +7,17 @@ const store = new Vuex.Store({
   },
   mutations: {
     add (state, record) {
-      state.records.push({
-        id: Math.random().toString().split('.')[1],
-        name: record.name,
-        text: record.text,
-        active: true
-      });
+      Vue.http.post('/api/record/', {'name': record.name, 'text': record.text})
+        .then(function(response) {
+          if(response.body.result === 'success')
+            state.records.push(response.body.data);
+        })
     },
     fetch (state){
-      Vue.http.get('/api/records') // does a HTTP GET request
+      Vue.http.get('/api/record/all') // does a HTTP GET request
         .then(function(response) {
-          state.records = response.body // pushes the JSON parsed body to the data
+          if(response.body.result === 'success')
+            state.records = response.body.data
         })
     },
     getToken (state){
@@ -31,15 +31,32 @@ const store = new Vuex.Store({
       
     },
     update (state, record) {
-      state.records[findRecordKey(record.id)] = {
-        id: record.id,
-        name: record.name,
-        text: record.text,
-        active: record.active
-      }
+      record = state.records[findRecordKey(record.id)];
+      Vue.http.put('/api/record/'+record.id, {name: record.name, text: record.text})
+        .then(function(response) {
+          if(response.body.result === 'success'){
+            record.name = record.name;
+            record.text = record.text;
+          }
+        })
+    },
+    toggleRecord (state, id) {
+      record = state.records[findRecordKey(id)];
+      active = record.active ? false : true;
+      Vue.http.put('/api/record/'+record.id, {active: active})
+        .then(function(response) {
+          if(response.body.result === 'success'){
+            record.active = active;
+          }
+        })
     },
     delete (state, recordId) {
-      state.records.splice(findRecordKey(recordId), 1)
+      Vue.http.delete('/api/record/'+recordId)
+        .then(function(response) {
+          if(response.body.result === 'success'){
+            state.records.splice(findRecordKey(recordId), 1)
+          }
+        })
     },
     login (state, credentials) {
       state.credentials = credentials;
@@ -115,8 +132,17 @@ var Login = Vue.extend({
         username: '',
         password: ''
       },
+      writer: {
+        username: '',
+        password: '',
+        name: '',
+        text: ''
+      },
+      writing: false,
       loggingIn: false,
-      error: ''
+      errorLogin: '',
+      errorWrite: '',
+      successWrite: ''
     }
   },
   mounted: function () {
@@ -126,11 +152,8 @@ var Login = Vue.extend({
     submit () {
       this.loggingIn = true;
       self = this;
-      const credentials = {
-        username: this.credentials.username,
-        password: this.credentials.password
-      };
-      Vue.http.post('/api/login', credentials) // does a HTTP GET request
+
+      Vue.http.post('/api/login', this.credentials)
         .then(function(response) {
           self.loggingIn = false;
           if(response.body.result === 'success'){
@@ -138,7 +161,35 @@ var Login = Vue.extend({
             router.push('/list');
           }
           else
-            self.error = 'Incorrect Student Id or Password!';
+            self.errorLogin = 'Incorrect Student Id or Password!';
+        })
+    },
+    write () {
+      this.writing = true;
+      this.errorWrite= '';
+      this.successWrite= '';
+      self = this;
+
+      Vue.http.post('/api/write', this.writer)
+        .then(function(response) {
+          console.log(response);
+          if (response.body.result === 'success'){
+            self.successWrite = 'Your record has been submitted.';
+            self.writer = {
+              username: '',
+              password: '',
+              name: '',
+              text: ''
+            };
+          }
+          else
+            self.errorWrite = 'Incorrect Student Id or Password!';
+        })
+        .catch(function(response) {
+          self.errorWrite = response.body.message
+        })
+        .finally(function(){
+          self.writing = false;
         })
     }
   }
@@ -163,8 +214,8 @@ var List = Vue.extend({
     }
   },
   methods: {
-    testThis: function () {
-      store.commit('add', {name:"Yigit",text:"Hello world world world world world world world!"})
+    toggleRecord: function (id) {
+      store.commit("toggleRecord", id);
     }
   }
 });
@@ -220,7 +271,7 @@ var RecordDelete = Vue.extend({
 var AddRecord = Vue.extend({
   template: '#add-record',
   data: function () {
-    return {record: {name: '', text: '', active: true}}
+    return {record: {name: '', text: ''}}
   },
   methods: {
     createRecord: function() {

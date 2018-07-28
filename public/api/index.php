@@ -11,20 +11,23 @@ if (PHP_SAPI == 'cli-server') {
 
 define('__ROOT__', __DIR__ . '/../../');
 
-
 require __ROOT__ . 'vendor/autoload.php';
 
 session_start();
+date_default_timezone_set("Europe/Istanbul");
 
 // Instantiate the app
 $settings = require __ROOT__ . 'src/settings.php';
 $app = new \Slim\App($settings);
 
+
 // Set up dependencies
 require __ROOT__ . 'src/dependencies.php';
 
+
 // Register middleware
 require __ROOT__ . 'src/middleware.php';
+
 
 // Register routes
 require __ROOT__ . 'src/routes.php';

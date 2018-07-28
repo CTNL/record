@@ -8,13 +8,14 @@ class Login {
 
 	public function check($post, Builder $studentDB)
 	{
-		$studentId = preg_replace('~\D~', '', $post['username']);
+		//$studentId = preg_replace('~\D~', '', $post['username']);
+		$username = $post['username'];
 
-		$this->checkBanned($studentId);
+		$this->checkBanned($username);
 
 		$correct = $studentDB
 			->where([
-				'id'	=>$studentId, 
+				'id'	=>$username, 
 				'ksifre'=>$post['password']
 			])
 			->count();
@@ -23,29 +24,55 @@ class Login {
 			$this->error('error');
 		}
 
-		$_SESSION['id'] = $studentId;
+		$_SESSION['id'] = $username;
 
 		$result = [
 			'result' => 'success',
 			'token' => session_id(),
-			'id' => $studentId
+			'id' => $username
+		];
+		return $result;
+	}
+
+	public function checkWriter($post, Builder $studentDB)
+	{
+		//$studentId = preg_replace('~\D~', '', $post['username']);
+		$username = $post['username'];
+
+		$this->checkBanned($username);
+
+		$correct = $studentDB
+			->where([
+				'id'	=>$username, 
+				'zsifre'=>$post['password']
+			])
+			->count();
+
+		if (!$correct) {
+			$this->error('error');
+		}
+
+		$result = [
+			'result' => 'success'
 		];
 		return $result;
 	}
 
 	public function verify($post){
-		$studentId = preg_replace('~\D~', '', $post['username']);
+		//$studentId = preg_replace('~\D~', '', $post['username']);
+		$username = $post['username'];
+
 		if(
 			$post['token'] === session_id() &&
-		    $studentId === $_SESSION['id']
+		    $username === $_SESSION['id']
 		)
 			return true;
 		else
 			return false;
 	}
 
-	public function getToken(){
-		if($_SESSION['id'])
+	static public function getToken(){
+		if(@$_SESSION['id'])
 			return ['result'=>'success', 'id' => $_SESSION['id'], 'token' => session_id()];
 		else
 			return false;
