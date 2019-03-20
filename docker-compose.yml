@@ -6,17 +6,16 @@ volumes:
 
 services:
     slim:
-      image: php:5.6-alpine
+      build: .
       container_name: record-php
       working_dir: /var/www
-      command: php -S 0.0.0.0:8080 -t public
-      environment:
-          docker: "true"
       ports:
-          - 8080:8080
+          - 80:80
       volumes:
           - .:/var/www
           - logs:/var/www/logs
+      links: 
+          - mysql
 
     mysql:
       image: mysql:5.6

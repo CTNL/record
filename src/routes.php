@@ -9,6 +9,10 @@ use App\Login;
 // Routes
 
 $app->get('/test', function (){
+	$login = new App\Login();
+
+	$result = $login->check([], $this->db->table('ogrenci'));
+
 	return "TEST";
 });
 
